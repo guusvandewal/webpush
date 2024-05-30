@@ -2,10 +2,31 @@
 
 const express = require("express");
 const webpush = require("web-push");
+const cors = require('cors');
 const dotenv = require("dotenv");
 dotenv.config();
 
 const app = express();
+
+// Define allowed origin (replace with your client domain)
+const allowedOrigin = 'http://localhost';
+
+app.use(cors({
+/*  origin: allowedOrigin,
+  methods: ['GET', 'POST'], // Allowed methods
+  headers: ['Content-Type', 'Authorization'], // Allowed headers*/
+}));
+
+
+const publicKey = Buffer.from(process.env.VAPID_PUBLIC_KEY, "utf-8"); // Replace with your key
+const publicEncodedKey = Buffer.from(publicKey).toString("base64url");
+
+const privateKey = Buffer.from(process.env.VAPID_PRIVATE_KEY, "utf-8"); // Replace with your key
+const privateEncodedKey = Buffer.from(privateKey).toString("base64url");
+
+console.log(publicEncodedKey);
+console.log(privateEncodedKey);
+
 
 const vapidKeys = {
   publicKey: process.env.VAPID_PUBLIC_KEY,
@@ -19,6 +40,12 @@ webpush.setVapidDetails(
 );
 
 let subscriptions = [];
+
+app.get("/get_keys", (req, res) => {
+  //return public key
+  res.json({publicKey: publicEncodedKey, privateKey: privateEncodedKey});
+
+});
 
 app.post("/subscribe", (req, res) => {
   const subscription = req.body;
